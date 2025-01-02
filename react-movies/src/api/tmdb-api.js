@@ -1,7 +1,7 @@
 const BASE_URL = "http://localhost:8080/api";
 
 export const getGenres = async () => {
-  const response = await fetch(`${BASE_URL}/genres`);
+  const response = await fetch(`${BASE_URL}/movies/genres`); 
   if (!response.ok) throw new Error(response.statusText);
   return response.json();
 };
@@ -66,6 +66,7 @@ export const getMovieCredits = async (id) => {
   if (!response.ok) throw new Error(response.statusText);
   return response.json();
 };
+
 export const getTrendingMovies = async () => {
   const response = await fetch(`${BASE_URL}/movies/trending`); 
   if (!response.ok) throw new Error(response.statusText);

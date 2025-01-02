@@ -4,15 +4,18 @@ import mongoose from 'mongoose';
 dotenv.config();
 
 // Connect to database
-mongoose.connect(process.env.MONGO_DB);
+mongoose.connect(process.env.MONGO_DB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 const db = mongoose.connection;
 
 db.on('error', (err) => {
-    console.log(`database connection error: ${err}`);
+  console.error(`Database connection error: ${err.message}`);
 });
 db.on('disconnected', () => {
-    console.log('database disconnected');
+  console.log('Database disconnected');
 });
 db.once('open', () => {
-    console.log(`database connected to ${db.name} on ${db.host}`);
-})
+  console.log(`Database connected to ${db.name} on ${db.host}`);
+});

@@ -5,33 +5,64 @@ import { getUpcomingMovies, fetchFromTMDB } from '../tmdb-api';
 import authenticate from '../../authenticate';
 import Review from './reviewModel';
 const router = express.Router();
+// Get trending movies
+
+router.get('/trending', asyncHandler(async (req, res) => {
+    try {
+        console.log('Starting to fetch trending movies from TMDB...');
+
+        // Define the TMDB endpoint
+        const endpoint = '/trending/movie/week';
+        
+        // Fetch data from TMDB
+        const trendingMovies = await fetchFromTMDB(endpoint);
+
+        // Check if the response is valid
+        if (!trendingMovies || !trendingMovies.results) {
+            console.error('Invalid response from TMDB:', trendingMovies);
+            return res.status(500).json({ message: 'Failed to fetch valid trending movies data from TMDB.' });
+        }
+
+        // Log success and send response
+        console.log('Trending movies successfully fetched:', trendingMovies.results);
+        res.status(200).json(trendingMovies.results);
+    } catch (error) {
+        // Log the error for debugging
+        console.error('Error fetching trending movies:', error.message);
+
+        // Return the error response
+        res.status(500).json({
+            message: 'Error fetching trending movies',
+            error: error.message
+        });
+    }
+}));
+
 
 // Get paginated list of movies with optional filters
 router.get('/', asyncHandler(async (req, res) => {
     let { page = 1, limit = 10, genre, year } = req.query;
     [page, limit] = [+page, +limit]; // Convert to numbers
 
-    // Validate pagination parameters
-    if (page < 1 || limit < 1) {
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
         return res.status(400).json({ message: 'Page and limit must be positive numbers.' });
     }
 
-    // Build the filter object
     const filter = {};
 
-    // Add genre filter
     if (genre) {
-        filter.genre_ids = { $in: [parseInt(genre, 10)] }; // Check if genre_ids array includes the genre
+        const genreId = parseInt(genre, 10);
+        if (isNaN(genreId)) {
+            return res.status(400).json({ message: 'Genre must be a valid number.' });
+        }
+        filter.genre_ids = { $in: [genreId] };
     }
-    
-    // Add year filter
-   
-if (year) {
-    const yearPattern = new RegExp(`^${year}`);
-    filter.release_date = { $regex: yearPattern }; // Use regex to match the year at the start
-}
 
-    // Fetch total movies and paginated results in parallel
+    if (year) {
+        const yearPattern = new RegExp(`^${year}`);
+        filter.release_date = { $regex: yearPattern };
+    }
+
     const [total_results, results] = await Promise.all([
         movieModel.countDocuments(filter),
         movieModel.find(filter).limit(limit).skip((page - 1) * limit),
@@ -49,7 +80,11 @@ if (year) {
 
 // Get movie details by ID
 router.get('/:id', asyncHandler(async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid movie ID. Must be a number.' });
+    }
+
     const movie = await movieModel.findByMovieDBId(id);
     if (movie) {
         res.status(200).json(movie);
@@ -77,7 +112,11 @@ router.get('/tmdb/popular', asyncHandler(async (req, res) => {
 
 // Add a new review for a movie
 router.post('/:id/reviews', authenticate, asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid movie ID. Must be a number.' });
+    }
+
     const { content } = req.body;
 
     if (!content) {
@@ -85,7 +124,7 @@ router.post('/:id/reviews', authenticate, asyncHandler(async (req, res) => {
     }
 
     const review = new Review({
-        movieId: parseInt(id, 10),
+        movieId: id,
         userId: req.user._id,
         content,
     });
@@ -96,24 +135,17 @@ router.post('/:id/reviews', authenticate, asyncHandler(async (req, res) => {
 
 // Get reviews for a movie
 router.get('/:id/reviews', asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+        return res.status(400).json({ message: 'Invalid movie ID. Must be a number.' });
+    }
 
     const reviews = await Review.find({ movieId: id }).populate('userId', 'username');
     res.status(200).json(reviews);
 }));
 
-router.get('/trending', asyncHandler(async (req, res) => {
-    try {
-        const trendingMovies = await fetchFromTMDB('/trending/movie/week');
-        res.status(200).json(trendingMovies.results);
-    } catch (error) {
-        console.error('Error fetching trending movies:', error.message);
-        res.status(500).json({ message: 'Failed to fetch trending movies from TMDB', error: error.message });
-    }
-}));
 
-
-
+// Get predefined genres
 router.get('/genres', asyncHandler(async (req, res) => {
     const genres = [
         { id: 28, name: "Action" },
@@ -138,4 +170,5 @@ router.get('/genres', asyncHandler(async (req, res) => {
     ];
     res.status(200).json({ genres });
 }));
+
 export default router;
