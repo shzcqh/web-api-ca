@@ -22,8 +22,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-async-handler": "^1.2.0",
+    "https-proxy-agent": "^7.0.6",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "socks-proxy-agent": "^8.0.5"
   }
 }

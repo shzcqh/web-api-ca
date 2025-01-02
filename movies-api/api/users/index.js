@@ -68,6 +68,7 @@ async function registerUser(req, res) {
 }
 
 async function authenticateUser(req, res) {
+    console.log("Provided password:", req.body.password);
     const user = await User.findByUserName(req.body.username);
     if (!user) {
         return res.status(401).json({ success: false, msg: 'Authentication failed. User not found.' });
