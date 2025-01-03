@@ -1,45 +1,49 @@
 import React, { useState } from "react";
 import Header from "../headerMovieList";
-import FilterCard from "../filterMoviesCard";
+import FilterMoviesCard from "../filterMoviesCard"; // 直接引入 FilterMoviesCard 替代顶部筛选器
 import MovieList from "../movieList";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 
 function MovieListPageTemplate({ movies = [], title, action }) {
-  const [nameFilter, setNameFilter] = useState("");
-  const [genreFilter, setGenreFilter] = useState("0");
-  const genreId = Number(genreFilter);
-
-  let displayedMovies = movies
-    .filter((m) => {
-      return m.title.toLowerCase().search(nameFilter.toLowerCase()) !== -1;
-    })
-    .filter((m) => {
-      return genreId > 0 ? m.genre_ids.includes(genreId) : true;
-    });
+  const [yearFilter, setYearFilter] = useState("All Years");
+  const [genreFilter, setGenreFilter] = useState("All Genres");
 
   const handleChange = (type, value) => {
-    if (type === "name") setNameFilter(value);
-    else setGenreFilter(value);
+    if (type === "year") {
+      setYearFilter(value);
+    } else if (type === "genre") {
+      setGenreFilter(value);
+    }
   };
 
   return (
-    <Grid container>
-      <Grid size={12}>
+    <Grid container spacing={2}>
+      {/* Header */}
+      <Grid item xs={12}>
         <Header title={title} />
       </Grid>
-      <Grid container sx={{ flex: "1 1 500px" }}>
-        <Grid
-          key="find"
-          size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}
-          sx={{ padding: "20px" }}
-        >
-          <FilterCard
-            onUserInput={handleChange}
-            titleFilter={nameFilter}
-            genreFilter={genreFilter}
-          />
+
+      {/* Top Filters */}
+      <Grid item xs={12}>
+        <Grid container spacing={2} justifyContent="center">
+          {/* Top Filters */}
+          <Grid item>
+            <FilterMoviesCard
+              yearFilter={yearFilter}
+              genreFilter={genreFilter}
+              onUserInput={handleChange}
+            />
+          </Grid>
         </Grid>
-        <MovieList action={action} movies={displayedMovies}></MovieList>
+      </Grid>
+
+      {/* Movie List */}
+      <Grid item xs={12}>
+        <MovieList
+          action={action}
+          yearFilter={yearFilter}
+          genreFilter={genreFilter}
+        />
       </Grid>
     </Grid>
   );

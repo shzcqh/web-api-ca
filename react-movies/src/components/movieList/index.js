@@ -3,9 +3,14 @@ import Movie from "../movieCard/";
 import Grid from "@mui/material/Grid";
 import ReactPaginate from "react-paginate";
 import "../../styles/pagination.css";
-import { getMovies } from "../../api/movies-api";
+import {
+  getMoviesByYear,
+  getMoviesByGenre,
+  getMovies,
+  getMoviesByYearAndGenre,
+} from "../../api/tmdb-api";
 
-const MovieList = ({ action }) => {
+const MovieList = ({ action, yearFilter, genreFilter }) => {
   const [movies, setMovies] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -14,17 +19,28 @@ const MovieList = ({ action }) => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const page = currentPage + 1;
-        const data = await getMovies(page, moviesPerPage);
+        let data;
+
+        if (yearFilter !== "All Years" && genreFilter !== "All Genres") {
+          data = await getMoviesByYearAndGenre(yearFilter, genreFilter);
+        } else if (yearFilter !== "All Years") {
+          data = await getMoviesByYear(yearFilter);
+        } else if (genreFilter !== "All Genres") {
+          data = await getMoviesByGenre(genreFilter);
+        } else {
+          const page = currentPage + 1;
+          data = await getMovies(page, moviesPerPage);
+        }
+
         setMovies(data.results);
-        setTotalPages(data.total_pages);
+        setTotalPages(data.total_pages || 1);
       } catch (error) {
         console.error("Failed to fetch movies:", error.message);
       }
     };
 
     fetchMovies();
-  }, [currentPage]);
+  }, [currentPage, yearFilter, genreFilter]);
 
   const handlePageClick = (data) => {
     setCurrentPage(data.selected);
@@ -47,7 +63,9 @@ const MovieList = ({ action }) => {
 
   return (
     <>
-      <Grid container spacing={6}>{movieCards}</Grid>
+      <Grid container spacing={6}>
+        {movieCards}
+      </Grid>
       <ReactPaginate
         previousLabel={"Previous"}
         nextLabel={"Next"}

@@ -30,4 +30,3 @@ export const addReview = async (id, reviewContent, token) => {
   );
   return response.data;
 };
-
