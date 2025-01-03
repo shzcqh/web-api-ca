@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:8080/api";
+export const BASE_URL = "http://localhost:8080/api";
+
 
 export const getMovies = async (page = 1, limit = 10) => {
   const response = await fetch(`${BASE_URL}/movies?page=${page}&limit=${limit}`);

@@ -9,8 +9,9 @@ import {
   getMovies,
   getMoviesByYearAndGenre,
 } from "../../api/tmdb-api";
+import { BASE_URL } from "../../api/tmdb-api";
 
-const MovieList = ({ action, yearFilter, genreFilter }) => {
+const MovieList = ({ action, yearFilter, genreFilter, searchQuery }) => {
   const [movies, setMovies] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -18,15 +19,14 @@ const MovieList = ({ action, yearFilter, genreFilter }) => {
 
   useEffect(() => {
     const fetchMovies = async () => {
-      console.log("Fetching movies with filters:", {
-        yearFilter,
-        genreFilter,
-        url: `/api/movies?page=${currentPage + 1}&limit=${moviesPerPage}&year=${yearFilter}&genre=${genreFilter}`,
-      });
       try {
         let data;
-
-        if (yearFilter !== "All Years" && genreFilter !== "All Genres") {
+        if (searchQuery) {
+          console.log("Searching movies with query:", searchQuery);
+          const response = await fetch(`${BASE_URL}/movies/search?query=${searchQuery}`);
+          if (!response.ok) throw new Error("Failed to search movies");
+          data = await response.json();
+        } else if (yearFilter !== "All Years" && genreFilter !== "All Genres") {
           data = await getMoviesByYearAndGenre(yearFilter, genreFilter);
         } else if (yearFilter !== "All Years") {
           data = await getMoviesByYear(yearFilter);
@@ -36,32 +36,23 @@ const MovieList = ({ action, yearFilter, genreFilter }) => {
           const page = currentPage + 1;
           data = await getMovies(page, moviesPerPage);
         }
-        console.log("Movies fetched:", data.results);
-        setMovies(data.results);
+        setMovies(data.results || []);
         setTotalPages(data.total_pages || 1);
       } catch (error) {
         console.error("Failed to fetch movies:", error.message);
       }
     };
-
+  
     fetchMovies();
-  }, [currentPage, yearFilter, genreFilter]);
+  }, [currentPage, yearFilter, genreFilter, searchQuery]);
+  
 
   const handlePageClick = (data) => {
     setCurrentPage(data.selected);
   };
 
   const movieCards = movies.map((m) => (
-    <Grid
-      key={m.id}
-      item
-      xs={12}
-      sm={6}
-      md={4}
-      lg={3}
-      xl={2}
-      sx={{ padding: "20px" }}
-    >
+    <Grid key={m.id} item xs={12} sm={6} md={4} lg={3} xl={2} sx={{ padding: "20px" }}>
       <Movie key={m.id} movie={m} action={action} />
     </Grid>
   ));
