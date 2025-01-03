@@ -4,7 +4,32 @@ import express from 'express';
 import { getUpcomingMovies, fetchFromTMDB } from '../tmdb-api';
 import authenticate from '../../authenticate';
 import Review from './reviewModel';
+
 const router = express.Router();
+
+// Search movies by title
+router.get("/search", async (req, res) => {
+    try {
+        const { query } = req.query; // Extract query parameter
+        if (!query) {
+            return res.status(400).json({ message: "Query parameter is required." });
+        }
+
+        // Search for movies with title matching the query (case-insensitive)
+        const movies = await movieModel.find({
+            title: { $regex: query, $options: "i" },
+        });
+
+        if (movies.length === 0) {
+            return res.status(404).json({ message: "No movies found." });
+        }
+
+        res.status(200).json({ results: movies });
+    } catch (err) {
+        res.status(500).json({ message: "Server error.", error: err.message });
+    }
+});
+
 // Get predefined genres
 router.get('/genres', asyncHandler(async (req, res) => {
     const genres = [
@@ -32,38 +57,23 @@ router.get('/genres', asyncHandler(async (req, res) => {
 }));
 
 // Get trending movies
-
 router.get('/trending', asyncHandler(async (req, res) => {
     try {
-        console.log('Starting to fetch trending movies from TMDB...');
-
-        // Define the TMDB endpoint
         const endpoint = '/trending/movie/week';
-        
-        // Fetch data from TMDB
         const trendingMovies = await fetchFromTMDB(endpoint);
 
-        // Check if the response is valid
         if (!trendingMovies || !trendingMovies.results) {
-            console.error('Invalid response from TMDB:', trendingMovies);
             return res.status(500).json({ message: 'Failed to fetch valid trending movies data from TMDB.' });
         }
 
-        // Log success and send response
-        console.log('Trending movies successfully fetched:', trendingMovies.results);
         res.status(200).json(trendingMovies.results);
     } catch (error) {
-        // Log the error for debugging
-        console.error('Error fetching trending movies:', error.message);
-
-        // Return the error response
         res.status(500).json({
             message: 'Error fetching trending movies',
             error: error.message
         });
     }
 }));
-
 
 // Get paginated list of movies with optional filters
 router.get('/', asyncHandler(async (req, res) => {
@@ -131,7 +141,6 @@ router.get('/tmdb/popular', asyncHandler(async (req, res) => {
         const popularMovies = await fetchFromTMDB('/movie/popular');
         res.status(200).json(popularMovies.results);
     } catch (error) {
-        console.error('Error fetching popular movies:', error.message);
         res.status(500).json({ message: 'Failed to fetch popular movies from TMDB', error: error.message });
     }
 }));
@@ -169,7 +178,5 @@ router.get('/:id/reviews', asyncHandler(async (req, res) => {
     const reviews = await Review.find({ movieId: id }).populate('userId', 'username');
     res.status(200).json(reviews);
 }));
-
-
 
 export default router;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Header from "../headerMovieList";
-import FilterMoviesCard from "../filterMoviesCard"; // 直接引入 FilterMoviesCard 替代顶部筛选器
+import FilterMoviesCard from "../filterMoviesCard"; 
 import MovieList from "../movieList";
 import Grid from "@mui/material/Grid";
 
@@ -9,6 +9,7 @@ function MovieListPageTemplate({ movies = [], title, action }) {
   const [genreFilter, setGenreFilter] = useState("All Genres");
 
   const handleChange = (type, value) => {
+    console.log(`Updating filter state: ${type} = ${value}`);
     if (type === "year") {
       setYearFilter(value);
     } else if (type === "genre") {

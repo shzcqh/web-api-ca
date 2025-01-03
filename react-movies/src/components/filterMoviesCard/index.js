@@ -35,6 +35,7 @@ export default function FilterMoviesCard({ yearFilter, genreFilter, onUserInput 
 
   const handleChange = (e, type) => {
     e.preventDefault();
+    console.log(`Filter changed: ${type} = ${e.target.value}`);
     onUserInput(type, e.target.value);
   };
 

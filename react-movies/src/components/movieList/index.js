@@ -18,6 +18,11 @@ const MovieList = ({ action, yearFilter, genreFilter }) => {
 
   useEffect(() => {
     const fetchMovies = async () => {
+      console.log("Fetching movies with filters:", {
+        yearFilter,
+        genreFilter,
+        url: `/api/movies?page=${currentPage + 1}&limit=${moviesPerPage}&year=${yearFilter}&genre=${genreFilter}`,
+      });
       try {
         let data;
 
@@ -31,7 +36,7 @@ const MovieList = ({ action, yearFilter, genreFilter }) => {
           const page = currentPage + 1;
           data = await getMovies(page, moviesPerPage);
         }
-
+        console.log("Movies fetched:", data.results);
         setMovies(data.results);
         setTotalPages(data.total_pages || 1);
       } catch (error) {
