@@ -21,7 +21,90 @@ const authenticateJWT = (req, res, next) => {
     res.status(401).json({ success: false, msg: 'Authentication token is missing.' });
   }
 };
-
+// Get user's favorite movies (protected route)
+router.get('/favorites', authenticateJWT, asyncHandler(async (req, res) => {
+    try {
+     
+      const user = await User.findOne({ username: req.user.username });
+      if (!user) {
+        return res.status(404).json({ success: false, msg: 'User not found.' });
+      }
+  
+    
+      res.status(200).json({ success: true, favorites: user.favorites });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        msg: 'Failed to fetch favorites.',
+        error: error.message,
+      });
+    }
+  }));
+  // Add a movie to favorites (protected route)
+router.post('/favorites', authenticateJWT, asyncHandler(async (req, res) => {
+    try {
+      const { movieId } = req.body;
+  
+      if (!movieId) {
+        return res.status(400).json({ success: false, msg: 'Movie ID is required.' });
+      }
+  
+      const user = await User.findOne({ username: req.user.username });
+  
+      if (!user) {
+        return res.status(404).json({ success: false, msg: 'User not found.' });
+      }
+  
+      
+      if (user.favorites.includes(movieId)) {
+        return res.status(400).json({ success: false, msg: 'Movie already in favorites.' });
+      }
+  
+      
+      user.favorites.push(movieId);
+      await user.save();
+  
+      res.status(200).json({ success: true, msg: 'Movie added to favorites.' });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        msg: 'Failed to add movie to favorites.',
+        error: error.message,
+      });
+    }
+  }));
+  
+  // Remove a movie from favorites (protected route)
+  router.delete('/favorites/:movieId', authenticateJWT, asyncHandler(async (req, res) => {
+    try {
+      const { movieId } = req.params;
+  
+      const user = await User.findOne({ username: req.user.username });
+  
+      if (!user) {
+        return res.status(404).json({ success: false, msg: 'User not found.' });
+      }
+  
+     
+      const index = user.favorites.indexOf(parseInt(movieId, 10));
+      if (index === -1) {
+        return res.status(404).json({ success: false, msg: 'Movie not found in favorites.' });
+      }
+  
+      
+      user.favorites.splice(index, 1);
+      await user.save();
+  
+      res.status(200).json({ success: true, msg: 'Movie removed from favorites.' });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        msg: 'Failed to remove movie from favorites.',
+        error: error.message,
+      });
+    }
+  }));
+  
 // Get all users (protected route)
 router.get('/', authenticateJWT, async (req, res) => {
   try {

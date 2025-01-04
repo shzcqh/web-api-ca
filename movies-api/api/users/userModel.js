@@ -20,6 +20,7 @@ const UserSchema = new Schema({
       message: 'Password must be at least 8 characters long and include at least one letter, one number, and one special character.',
     },
   },
+  favorites: [{ type: Number }]
 });
 UserSchema.methods.comparePassword = async function (passw) { 
   return await bcrypt.compare(passw, this.password); 

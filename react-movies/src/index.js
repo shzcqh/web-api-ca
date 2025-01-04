@@ -16,8 +16,7 @@ import MustWatchPage from "./pages/mustWatchPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import PrivateRoute from "./contexts/PrivateRoute"; 
-import { theme } from "./theme";
-
+import { theme } from "./theme"; 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -42,7 +41,7 @@ const App = () => {
           >
             <SiteHeader />
             <Routes>
-              
+          
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -81,4 +80,3 @@ const App = () => {
 
 const rootElement = createRoot(document.getElementById("root"));
 rootElement.render(<App />);
-
