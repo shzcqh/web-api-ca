@@ -9,6 +9,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
       const response = await fetch("http://localhost:8080/api/users", {
         method: "POST",
@@ -17,37 +18,36 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-      if (data.success) {
+
+      if (response.ok) {
         localStorage.setItem("token", data.token);
-        navigate("/favorites");
+        navigate("/"); 
       } else {
         setError(data.msg || "Login failed.");
       }
     } catch (err) {
-      setError("Server error. Please try again later.");
+      setError("Something went wrong. Please try again.");
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleLogin}>
       <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button type="submit">Login</button>
       {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+    </form>
   );
 };
 

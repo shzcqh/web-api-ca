@@ -9,6 +9,7 @@ const RegisterPage = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
     try {
       const response = await fetch("http://localhost:8080/api/users?action=register", {
         method: "POST",
@@ -17,37 +18,37 @@ const RegisterPage = () => {
       });
 
       const data = await response.json();
-      if (data.success) {
+
+      if (response.ok) {
         navigate("/login"); 
       } else {
         setError(data.msg || "Registration failed.");
       }
     } catch (err) {
-      setError("Server error. Please try again later.");
+      setError("Something went wrong. Please try again.");
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleRegister}>
       <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Register</button>
-      </form>
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button type="submit">Register</button>
       {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+    </form>
   );
 };
 
 export default RegisterPage;
+
