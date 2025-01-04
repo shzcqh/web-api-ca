@@ -13,8 +13,10 @@ import AddMovieReviewPage from "./pages/addMovieReviewPage";
 import UpcomingMoviesPage from "./pages/upcomingMoviesPage";
 import ActorDetailsPage from "./pages/actorDetailsPage";
 import MustWatchPage from "./pages/mustWatchPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import PrivateRoute from "./contexts/PrivateRoute"; 
 import { theme } from "./theme";
-
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,20 +37,39 @@ const App = () => {
             style={{
               backgroundColor: theme.backgroundColor,
               color: theme.textColor,
-              minHeight: "100vh", 
+              minHeight: "100vh",
             }}
           >
             <SiteHeader />
             <Routes>
-              <Route path="/movies/favorites" element={<FavoriteMoviesPage />} />
-              <Route path="/reviews/:id" element={<MovieReviewPage />} />
-              <Route path="/movies/:id" element={<MoviePage />} />
+              
               <Route path="/" element={<HomePage />} />
-              <Route path="*" element={<Navigate to="/" />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/movies/:id" element={<MoviePage />} />
+              <Route path="/reviews/:id" element={<MovieReviewPage />} />
               <Route path="/reviews/form" element={<AddMovieReviewPage />} />
               <Route path="/movies/upcoming" element={<UpcomingMoviesPage />} />
-              <Route path="/movies/mustWatch" element={<MustWatchPage />} />
               <Route path="/actor/:id" element={<ActorDetailsPage />} />
+              <Route path="*" element={<Navigate to="/" />} />
+
+              
+              <Route
+                path="/movies/favorites"
+                element={
+                  <PrivateRoute>
+                    <FavoriteMoviesPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/movies/mustWatch"
+                element={
+                  <PrivateRoute>
+                    <MustWatchPage />
+                  </PrivateRoute>
+                }
+              />
             </Routes>
           </div>
         </MoviesContextProvider>
@@ -60,3 +81,4 @@ const App = () => {
 
 const rootElement = createRoot(document.getElementById("root"));
 rootElement.render(<App />);
+
